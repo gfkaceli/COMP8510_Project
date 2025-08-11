@@ -1,5 +1,6 @@
 import sys
 import cv2
+import os
 import numpy as np
 from PIL import Image as PILImage
 from PyQt5.QtWidgets import (
@@ -8,6 +9,12 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
+
+def save_image(path, img):
+    if os.path.dirname(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+    cv2.imwrite(path, img)
+
 
 # GUI app for hybrid dense stereo matching
 class StereoMatchApp(QMainWindow):
@@ -27,6 +34,9 @@ class StereoMatchApp(QMainWindow):
         self.pts2 = None
         self.H1 = None
         self.H2 = None
+        
+        self.left_path = left_path
+        self.right_path = right_path
 
         # Match data
         self.edge_matches = {}
@@ -206,6 +216,17 @@ class StereoMatchApp(QMainWindow):
         recon_unrect = cv2.warpPerspective(recon_rect, invH2, (w, h))
         cv2.imshow('Reconstructed Right (Original View)', recon_unrect)
         cv2.waitKey(1)
+
+                # Save outputs (paper shows reconstructions)
+        """if self.right_path:
+            base_dir = os.path.dirname(self.right_path)
+            stem = os.path.splitext(os.path.basename(self.right_path))[0]
+            disp_path  = os.path.join(base_dir, f"{stem}_match_disparity.png")
+            recon_path = os.path.join(base_dir, f"{stem}_match_reconstructed.png")
+            save_image(disp_path, disp_vis)
+            save_image(recon_path, recon_unrect)
+            print(f"Saved: {disp_path}")
+            print(f"Saved: {recon_path}")"""
 
 if __name__=='__main__':
     left = sys.argv[1] if len(sys.argv)>1 else None
